@@ -1,57 +1,39 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 interface UseDocumentVisibilityOptions {
-  onVisible?: () => void;
-  onHidden?: () => void;
+  onVisibilityChange?: (state: DocumentVisibilityState) => void;
 }
 
 interface DocumentVisibilityState {
   isVisible: boolean;
-  visibilityState: VisibilityState;
+  visibilityState: 'visible' | 'hidden' | 'prerender';
 }
 
 export default function useDocumentVisibility({
-  onVisible,
-  onHidden,
-}: UseDocumentVisibilityOptions = {}): DocumentVisibilityState {
-  const [state, setState] = useState<DocumentVisibilityState>(() => ({
-    isVisible: typeof document !== 'undefined' ? !document.hidden : true,
-    visibilityState:
-      typeof document !== 'undefined'
-        ? document.visibilityState
-        : 'visible',
-  }));
-
-  const handleVisibilityChange = useCallback(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
-    const isVisible = !document.hidden;
-    const visibilityState = document.visibilityState;
-
-    setState({ isVisible, visibilityState });
-
-    if (isVisible) {
-      onVisible?.();
-    } else {
-      onHidden?.();
-    }
-  }, [onVisible, onHidden]);
+  onVisibilityChange,
+}: UseDocumentVisibilityOptions = {}) {
+  const [visibilityState, setVisibilityState] = useState<DocumentVisibilityState>({
+    isVisible: true,
+    visibilityState: 'visible',
+  });
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
+    function handleVisibilityChange() {
+      const nextState = {
+        isVisible: document.visibilityState === 'visible',
+        visibilityState: document.visibilityState as DocumentVisibilityState['visibilityState'],
+      };
+      setVisibilityState(nextState);
+      onVisibilityChange?.(nextState);
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [handleVisibilityChange]);
+  }, [onVisibilityChange]);
 
-  return state;
+  return visibilityState;
 }
 
 // Example usage:

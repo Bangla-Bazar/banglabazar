@@ -1,9 +1,31 @@
 import React, { useState } from 'react';
-import { Product, CreateProductData } from '../utils/products';
+import { Product } from '@/types';
 import Input from './Input';
 import Textarea from './Textarea';
 import FileUpload from './FileUpload';
 import Button from './Button';
+
+interface FormData {
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  tags: string[];
+  isHotProduct: boolean;
+  isSeasonal: boolean;
+  seasonalEndDate: string;
+}
+
+interface CreateProductData {
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  tags: string[];
+  isHotProduct: boolean;
+  isSeasonal: boolean;
+  seasonalEndDate?: Date;
+}
 
 interface ProductFormProps {
   initialData?: Product;
@@ -16,7 +38,7 @@ export default function ProductForm({
   onSubmit,
   isLoading = false,
 }: ProductFormProps) {
-  const [formData, setFormData] = useState<CreateProductData>({
+  const [formData, setFormData] = useState<FormData>({
     name: initialData?.name || '',
     description: initialData?.description || '',
     price: initialData?.price || 0,
@@ -24,14 +46,14 @@ export default function ProductForm({
     tags: initialData?.tags || [],
     isHotProduct: initialData?.isHotProduct || false,
     isSeasonal: initialData?.isSeasonal || false,
-    seasonalEndDate: initialData?.seasonalEndDate ? new Date(initialData.seasonalEndDate).toISOString().split('T')[0] : '',
+    seasonalEndDate: initialData?.seasonalEndDate ? initialData.seasonalEndDate.toISOString().split('T')[0] : '',
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateProductData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
   const validateForm = () => {
-    const newErrors: Partial<Record<keyof CreateProductData, string>> = {};
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
@@ -64,7 +86,12 @@ export default function ProductForm({
       return;
     }
 
-    await onSubmit(formData);
+    const submitData: CreateProductData = {
+      ...formData,
+      seasonalEndDate: formData.isSeasonal && formData.seasonalEndDate ? new Date(formData.seasonalEndDate) : undefined,
+    };
+
+    await onSubmit(submitData);
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,8 +178,8 @@ export default function ProductForm({
         <Input
           label="Seasonal End Date"
           type="date"
-          value={formData.seasonalEndDate ? new Date(formData.seasonalEndDate).toISOString().split('T')[0] : ''}
-          onChange={e => setFormData(prev => ({ ...prev, seasonalEndDate: new Date(e.target.value) }))}
+          value={formData.seasonalEndDate}
+          onChange={e => setFormData(prev => ({ ...prev, seasonalEndDate: e.target.value }))}
           error={errors.seasonalEndDate}
         />
       )}

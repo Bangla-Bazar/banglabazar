@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-interface FileUploadProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+type FileUploadProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'accept'> & {
   label?: string;
   error?: string;
   helperText?: string;
@@ -9,7 +9,7 @@ interface FileUploadProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
   maxSize?: number;
   onChange?: (files: File[]) => void;
   multiple?: boolean;
-}
+};
 
 const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
   ({ label, error, helperText, accept, maxSize, onChange, multiple = false, className = '', ...props }, ref) => {

@@ -1,17 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { showError } from '../utils/notifications';
+
+interface UseGeolocationOptions {
+  enableHighAccuracy?: boolean;
+  timeout?: number;
+  maximumAge?: number;
+}
 
 interface GeolocationState {
   isSupported: boolean;
   position: GeolocationPosition | null;
-  error: GeolocationError | null;
+  error: GeolocationPositionError | null;
   isLoading: boolean;
-}
-
-interface UseGeolocationOptions extends PositionOptions {
-  showNotifications?: boolean;
-  onSuccess?: (position: GeolocationPosition) => void;
-  onError?: (error: GeolocationError) => void;
 }
 
 const defaultOptions: PositionOptions = {
@@ -20,83 +20,48 @@ const defaultOptions: PositionOptions = {
   timeout: Infinity,
 };
 
-export default function useGeolocation({
-  showNotifications = true,
-  onSuccess,
-  onError,
-  ...positionOptions
-}: UseGeolocationOptions = {}): GeolocationState {
+export default function useGeolocation(options: UseGeolocationOptions = {}): GeolocationState {
   const [state, setState] = useState<GeolocationState>({
-    isSupported: typeof navigator !== 'undefined' && 'geolocation' in navigator,
+    isSupported: 'geolocation' in navigator,
     position: null,
     error: null,
     isLoading: true,
   });
 
-  const handleSuccess = useCallback(
-    (position: GeolocationPosition) => {
-      setState(prev => ({
+  useEffect(() => {
+    if (!state.isSupported) {
+      setState((prev) => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    const successHandler = (position: GeolocationPosition) => {
+      setState((prev) => ({
         ...prev,
         position,
         error: null,
         isLoading: false,
       }));
-      onSuccess?.(position);
-    },
-    [onSuccess]
-  );
+    };
 
-  const handleError = useCallback(
-    (error: GeolocationError) => {
-      setState(prev => ({
+    const errorHandler = (error: GeolocationPositionError) => {
+      setState((prev) => ({
         ...prev,
         position: null,
         error,
         isLoading: false,
       }));
-
-      if (showNotifications) {
-        showError(`Geolocation error: ${error.message}`);
-      }
-
-      onError?.(error);
-    },
-    [onError, showNotifications]
-  );
-
-  useEffect(() => {
-    if (!state.isSupported) {
-      setState(prev => ({
-        ...prev,
-        error: new Error('Geolocation is not supported') as GeolocationError,
-        isLoading: false,
-      }));
-      return;
-    }
-
-    const options = {
-      ...defaultOptions,
-      ...positionOptions,
     };
 
-    // Get initial position
     const watchId = navigator.geolocation.watchPosition(
-      handleSuccess,
-      handleError,
+      successHandler,
+      errorHandler,
       options
     );
 
     return () => {
       navigator.geolocation.clearWatch(watchId);
     };
-  }, [
-    state.isSupported,
-    handleSuccess,
-    handleError,
-    positionOptions.enableHighAccuracy,
-    positionOptions.maximumAge,
-    positionOptions.timeout,
-  ]);
+  }, [options, state.isSupported]);
 
   return state;
 }

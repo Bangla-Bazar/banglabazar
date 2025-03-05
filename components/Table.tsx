@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
 interface Column<T> {
   header: string;
-  accessor: keyof T | ((item: T) => React.ReactNode);
+  accessor: keyof T | ((item: T) => ReactNode);
   className?: string;
 }
 
@@ -70,7 +70,7 @@ export default function Table<T extends { id?: string | number }>({
                 >
                   {typeof column.accessor === 'function'
                     ? column.accessor(item)
-                    : item[column.accessor]}
+                    : String(item[column.accessor])}
                 </td>
               ))}
             </tr>

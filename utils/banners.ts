@@ -62,7 +62,11 @@ export async function createBanner(data: CreateBannerData): Promise<Banner> {
 export async function updateBanner(id: string, data: UpdateBannerData): Promise<void> {
   try {
     const docRef = doc(db, BANNERS_COLLECTION, id);
-    await updateDoc(docRef, data);
+    const formattedData = Object.entries(data).reduce((acc, [key, value]) => {
+      acc[key] = value;
+      return acc;
+    }, {} as { [key: string]: any });
+    await updateDoc(docRef, formattedData);
   } catch (error) {
     console.error('Error updating banner:', error);
     throw error;

@@ -128,7 +128,7 @@ export interface GetProductsOptions {
 
 export async function getProducts(options: GetProductsOptions = {}): Promise<Product[]> {
   try {
-    let q = collection(db, PRODUCTS_COLLECTION);
+    let q = query(collection(db, PRODUCTS_COLLECTION));
 
     // Apply filters
     if (options.tag) {
