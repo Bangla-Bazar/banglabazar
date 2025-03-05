@@ -6,6 +6,8 @@ export interface Product {
   imageUrl: string;
   tags: string[];
   isHotProduct: boolean;
+  isSeasonal: boolean;
+  seasonalEndDate: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

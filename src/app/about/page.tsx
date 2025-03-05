@@ -49,7 +49,7 @@ export default function About() {
                   <MapPinIcon className="h-6 w-6 text-green-600 mt-1 flex-shrink-0" />
                   <div className="ml-3">
                     <h3 className="text-lg font-medium text-gray-900">Location</h3>
-                    <p className="text-gray-600">123 Main Street</p>
+                    <p className="text-gray-600">1745 N Broad St</p>
                     <p className="text-gray-600">Lansdale, PA 19446</p>
                   </div>
                 </div>
@@ -58,8 +58,8 @@ export default function About() {
                   <PhoneIcon className="h-6 w-6 text-green-600 mt-1 flex-shrink-0" />
                   <div className="ml-3">
                     <h3 className="text-lg font-medium text-gray-900">Contact</h3>
-                    <p className="text-gray-600">Phone: (215) 555-0123</p>
-                    <p className="text-gray-600">Email: info@banglabazar.com</p>
+                    <p className="text-gray-600">Phone: (215) 393-8000</p>
+                    <p className="text-gray-600">Email: banglabazarhmg@gmail.com</p>
                   </div>
                 </div>
 
@@ -67,8 +67,7 @@ export default function About() {
                   <ClockIcon className="h-6 w-6 text-green-600 mt-1 flex-shrink-0" />
                   <div className="ml-3">
                     <h3 className="text-lg font-medium text-gray-900">Store Hours</h3>
-                    <p className="text-gray-600">Monday - Saturday: 9:00 AM - 8:00 PM</p>
-                    <p className="text-gray-600">Sunday: 10:00 AM - 6:00 PM</p>
+                    <p className="text-gray-600">Open Daily: 10 AM - 10 PM</p>
                   </div>
                 </div>
               </div>
@@ -77,7 +76,7 @@ export default function About() {
             {/* Google Maps Embed */}
             <div className="mt-6 h-[300px] rounded-lg overflow-hidden shadow-sm">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12345.67890!2d-75.2833!3d40.2414!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c6a6e8b8b8b8b8%3A0x8b8b8b8b8b8b8b8b!2sLansdale%2C%20PA!5e0!3m2!1sen!2sus!4v1234567890"
+                src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=1745%20N%20Broad%20St,%20Lansdale,%20PA%2019446+(Bangla%20Bazar%20Halal%20Meat%20&amp;%20Grocerys%20Name)&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

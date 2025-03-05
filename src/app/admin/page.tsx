@@ -33,6 +33,8 @@ export default function AdminDashboard() {
     price: '',
     tags: '',
     isHotProduct: false,
+    isSeasonal: false,
+    seasonalEndDate: '',
     imageFile: null as File | null,
   });
 
@@ -67,24 +69,33 @@ export default function AdminDashboard() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!productForm.imageFile) {
-      toast.error('Please select an image');
+    if (!productForm.name.trim()) {
+      toast.error('Product name is required');
       return;
     }
 
     try {
-      const newProduct = await addProduct(
-        {
-          name: productForm.name,
-          description: productForm.description,
-          price: parseFloat(productForm.price),
-          tags: productForm.tags.split(',').map((tag) => tag.trim()),
-          isHotProduct: productForm.isHotProduct,
-        },
-        productForm.imageFile
+      // Create a default image file if none is provided
+      const imageFile = productForm.imageFile || new File(
+        [new Uint8Array(0)], // Empty file
+        'placeholder.png',
+        { type: 'image/png' }
       );
 
-      setProducts([...products, newProduct]);
+      const productData = {
+        name: productForm.name.trim(),
+        description: productForm.description.trim() || '',
+        price: productForm.price ? parseFloat(productForm.price) : 0,
+        tags: productForm.tags ? productForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
+        isHotProduct: productForm.isHotProduct,
+        isSeasonal: productForm.isSeasonal || false,
+        seasonalEndDate: productForm.isSeasonal && productForm.seasonalEndDate ? new Date(productForm.seasonalEndDate) : null,
+        imageUrl: '', // This will be set by addProduct
+      } as const;
+
+      const newProduct = await addProduct(productData, imageFile);
+
+      setProducts((prevProducts) => [...prevProducts, newProduct as Product]);
       setIsAddingProduct(false);
       setProductForm({
         name: '',
@@ -92,33 +103,46 @@ export default function AdminDashboard() {
         price: '',
         tags: '',
         isHotProduct: false,
+        isSeasonal: false,
+        seasonalEndDate: '',
         imageFile: null,
       });
       toast.success('Product added successfully');
     } catch (error) {
-      toast.error('Error adding product');
+      console.error('Error adding product:', error);
+      toast.error(error instanceof Error ? error.message : 'Error adding product');
     }
   };
 
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingProduct) return;
+    if (!editingProduct || !productForm.name.trim()) {
+      toast.error('Product name is required');
+      return;
+    }
 
     try {
+      const updateData = {
+        name: productForm.name.trim(),
+        description: productForm.description.trim() || '',
+        price: productForm.price ? parseFloat(productForm.price) : 0,
+        tags: productForm.tags ? productForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
+        isHotProduct: productForm.isHotProduct,
+        isSeasonal: productForm.isSeasonal || false,
+        seasonalEndDate: productForm.isSeasonal && productForm.seasonalEndDate ? new Date(productForm.seasonalEndDate) : null,
+        imageUrl: editingProduct.imageUrl,
+        createdAt: editingProduct.createdAt,
+        updatedAt: new Date(),
+      } as const;
+
       const updatedProduct = await updateProduct(
         editingProduct.id,
-        {
-          name: productForm.name,
-          description: productForm.description,
-          price: parseFloat(productForm.price),
-          tags: productForm.tags.split(',').map((tag) => tag.trim()),
-          isHotProduct: productForm.isHotProduct,
-        },
+        updateData,
         productForm.imageFile || undefined
       );
 
-      setProducts(
-        products.map((p) => (p.id === editingProduct.id ? updatedProduct : p))
+      setProducts((prevProducts) =>
+        prevProducts.map((p) => (p.id === editingProduct.id ? updatedProduct as Product : p))
       );
       setEditingProduct(null);
       setProductForm({
@@ -127,6 +151,8 @@ export default function AdminDashboard() {
         price: '',
         tags: '',
         isHotProduct: false,
+        isSeasonal: false,
+        seasonalEndDate: '',
         imageFile: null,
       });
       toast.success('Product updated successfully');
@@ -160,16 +186,19 @@ export default function AdminDashboard() {
     }
 
     try {
+      const bannerData = {
+        title: bannerForm.title,
+        description: bannerForm.description,
+        link: bannerForm.link,
+        imageUrl: '', // This will be set by addBanner
+      } as const;
+
       const newBanner = await addBanner(
-        {
-          title: bannerForm.title,
-          description: bannerForm.description,
-          link: bannerForm.link,
-        },
+        bannerData,
         bannerForm.imageFile
       );
 
-      setBanners([...banners, newBanner]);
+      setBanners((prevBanners) => [...prevBanners, newBanner as Banner]);
       setIsAddingBanner(false);
       setBannerForm({
         title: '',
@@ -269,7 +298,6 @@ export default function AdminDashboard() {
                   onChange={(e) =>
                     setProductForm({ ...productForm, price: e.target.value })
                   }
-                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
@@ -282,7 +310,6 @@ export default function AdminDashboard() {
                   onChange={(e) =>
                     setProductForm({ ...productForm, description: e.target.value })
                   }
-                  required
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
@@ -297,7 +324,6 @@ export default function AdminDashboard() {
                   onChange={(e) =>
                     setProductForm({ ...productForm, tags: e.target.value })
                   }
-                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
@@ -315,7 +341,6 @@ export default function AdminDashboard() {
                     })
                   }
                   className="w-full"
-                  required={!editingProduct}
                 />
               </div>
               <div className="md:col-span-2">
@@ -336,6 +361,40 @@ export default function AdminDashboard() {
                   </span>
                 </label>
               </div>
+              <div className="md:col-span-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={productForm.isSeasonal}
+                    onChange={(e) =>
+                      setProductForm({
+                        ...productForm,
+                        isSeasonal: e.target.checked,
+                        seasonalEndDate: e.target.checked ? productForm.seasonalEndDate : '',
+                      })
+                    }
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">
+                    Seasonal Product (Optional)
+                  </span>
+                </label>
+              </div>
+              {productForm.isSeasonal && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Seasonal End Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={productForm.seasonalEndDate}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, seasonalEndDate: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              )}
             </div>
             <div className="mt-6 flex justify-end space-x-4">
               <button
@@ -349,6 +408,8 @@ export default function AdminDashboard() {
                     price: '',
                     tags: '',
                     isHotProduct: false,
+                    isSeasonal: false,
+                    seasonalEndDate: '',
                     imageFile: null,
                   });
                 }}
@@ -449,6 +510,8 @@ export default function AdminDashboard() {
                           price: product.price.toString(),
                           tags: product.tags.join(', '),
                           isHotProduct: product.isHotProduct,
+                          isSeasonal: product.isSeasonal,
+                          seasonalEndDate: product.seasonalEndDate ? product.seasonalEndDate.toISOString().split('T')[0] : '',
                           imageFile: null,
                         });
                       }}

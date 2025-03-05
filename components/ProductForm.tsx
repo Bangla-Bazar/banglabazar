@@ -23,6 +23,8 @@ export default function ProductForm({
     imageUrl: initialData?.imageUrl || '',
     tags: initialData?.tags || [],
     isHotProduct: initialData?.isHotProduct || false,
+    isSeasonal: initialData?.isSeasonal || false,
+    seasonalEndDate: initialData?.seasonalEndDate ? new Date(initialData.seasonalEndDate).toISOString().split('T')[0] : '',
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -131,6 +133,29 @@ export default function ProductForm({
           Mark as Hot Product
         </label>
       </div>
+
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="isSeasonal"
+          checked={formData.isSeasonal}
+          onChange={e => setFormData(prev => ({ ...prev, isSeasonal: e.target.checked }))}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        <label htmlFor="isSeasonal" className="ml-2 block text-sm text-gray-900">
+          Mark as Seasonal Product
+        </label>
+      </div>
+
+      {formData.isSeasonal && (
+        <Input
+          label="Seasonal End Date"
+          type="date"
+          value={formData.seasonalEndDate ? new Date(formData.seasonalEndDate).toISOString().split('T')[0] : ''}
+          onChange={e => setFormData(prev => ({ ...prev, seasonalEndDate: new Date(e.target.value) }))}
+          error={errors.seasonalEndDate}
+        />
+      )}
 
       <div className="flex justify-end">
         <Button type="submit" isLoading={isLoading}>

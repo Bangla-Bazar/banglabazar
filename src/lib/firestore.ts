@@ -19,19 +19,35 @@ import { Product, Banner } from '@/types';
 
 // Product Functions
 export async function addProduct(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>, imageFile: File) {
-  const storageRef = ref(storage, `products/${imageFile.name}-${Date.now()}`);
-  const uploadResult = await uploadBytes(storageRef, imageFile);
-  const imageUrl = await getDownloadURL(uploadResult.ref);
+  try {
+    let imageUrl = '';
+    
+    // Only attempt to upload if the file has content
+    if (imageFile.size > 0) {
+      const storageRef = ref(storage, `products/${imageFile.name}-${Date.now()}`);
+      const uploadResult = await uploadBytes(storageRef, imageFile);
+      imageUrl = await getDownloadURL(uploadResult.ref);
+    }
 
-  const productData = {
-    ...product,
-    imageUrl,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  };
+    const now = new Date();
+    const productData = {
+      ...product,
+      imageUrl: imageUrl || product.imageUrl, // Use existing URL if no new image
+      createdAt: now,
+      updatedAt: now,
+    };
 
-  const docRef = await addDoc(collection(db, 'products'), productData);
-  return { id: docRef.id, ...productData };
+    const docRef = await addDoc(collection(db, 'products'), productData);
+    return {
+      id: docRef.id,
+      ...productData,
+      createdAt: now,
+      updatedAt: now,
+    };
+  } catch (error) {
+    console.error('Error in addProduct:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to add product');
+  }
 }
 
 export async function updateProduct(
@@ -51,11 +67,16 @@ export async function updateProduct(
   const updateData = {
     ...updates,
     ...(imageUrl && { imageUrl }),
-    updatedAt: Timestamp.now(),
+    updatedAt: new Date(),
   };
 
   await updateDoc(productRef, updateData);
-  return { id: productId, ...updateData };
+  return {
+    id: productId,
+    ...updateData,
+    createdAt: updates.createdAt || new Date(),
+    updatedAt: new Date(),
+  };
 }
 
 export async function deleteProduct(productId: string, imageUrl: string) {
@@ -74,7 +95,20 @@ export async function getAllProducts() {
 export async function getHotProducts() {
   const q = query(
     collection(db, 'products'),
-    where('isHotProduct', '==', true)
+    where('isHotProduct', '==', true),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(docToProduct);
+}
+
+export async function getSeasonalProducts() {
+  const now = new Date();
+  const q = query(
+    collection(db, 'products'),
+    where('isSeasonal', '==', true),
+    where('seasonalEndDate', '>=', now),
+    orderBy('seasonalEndDate', 'asc')
   );
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(docToProduct);
@@ -86,10 +120,11 @@ export async function addBanner(banner: Omit<Banner, 'id' | 'createdAt'>, imageF
   const uploadResult = await uploadBytes(storageRef, imageFile);
   const imageUrl = await getDownloadURL(uploadResult.ref);
 
+  const now = new Date();
   const bannerData = {
     ...banner,
     imageUrl,
-    createdAt: Timestamp.now(),
+    createdAt: now,
   };
 
   const docRef = await addDoc(collection(db, 'banners'), bannerData);
@@ -107,6 +142,7 @@ export async function deleteBanner(bannerId: string, imageUrl: string) {
 export async function getAllBanners() {
   const q = query(
     collection(db, 'banners'),
+    orderBy('createdAt', 'desc'),
     limit(5)
   );
   const querySnapshot = await getDocs(q);
@@ -124,6 +160,8 @@ function docToProduct(doc: QueryDocumentSnapshot<DocumentData>): Product {
     imageUrl: data.imageUrl,
     tags: data.tags,
     isHotProduct: data.isHotProduct,
+    isSeasonal: data.isSeasonal || false,
+    seasonalEndDate: data.seasonalEndDate ? data.seasonalEndDate.toDate() : null,
     createdAt: data.createdAt.toDate(),
     updatedAt: data.updatedAt.toDate(),
   };

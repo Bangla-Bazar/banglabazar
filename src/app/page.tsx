@@ -3,33 +3,39 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getAllBanners, getHotProducts } from '@/lib/firestore';
+import { getAllBanners, getHotProducts, getSeasonalProducts } from '@/lib/firestore';
 import { Banner, Product } from '@/types';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [hotProducts, setHotProducts] = useState<Product[]>([]);
+  const [seasonalProducts, setSeasonalProducts] = useState<Product[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [bannersData, productsData] = await Promise.all([
+        const [bannersData, hotProductsData, seasonalProductsData] = await Promise.all([
           getAllBanners(),
           getHotProducts(),
+          getSeasonalProducts(),
         ]);
         // Sort banners by createdAt in descending order
         const sortedBanners = [...bannersData].sort((a, b) => 
           b.createdAt.getTime() - a.createdAt.getTime()
         );
         // Sort products by createdAt in descending order
-        const sortedProducts = [...productsData].sort((a, b) => 
+        const sortedHotProducts = [...hotProductsData].sort((a, b) => 
+          b.createdAt.getTime() - a.createdAt.getTime()
+        );
+        const sortedSeasonalProducts = [...seasonalProductsData].sort((a, b) => 
           b.createdAt.getTime() - a.createdAt.getTime()
         );
         setBanners(sortedBanners);
-        setHotProducts(sortedProducts);
+        setHotProducts(sortedHotProducts);
+        setSeasonalProducts(sortedSeasonalProducts);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -139,8 +145,9 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center mb-12">Hot Products</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {hotProducts.map((product) => (
-              <div
+              <Link
                 key={product.id}
+                href={`/products?tag=${encodeURIComponent(product.tags[0])}`}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <div className="relative h-48">
@@ -154,17 +161,62 @@ export default function Home() {
                 <div className="p-4">
                   <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
                   <p className="text-gray-600 mb-4">{product.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold">${product.price}</span>
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                    >
-                      View Details
-                    </Link>
+                  <div className="flex flex-wrap gap-2">
+                    {product.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Seasonal Products Section */}
+      {seasonalProducts.length > 0 && (
+        <section className="py-16 px-4 md:px-8 bg-gray-50">
+          <h2 className="text-3xl font-bold text-center mb-12">Seasonal Products</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {seasonalProducts.map((product) => (
+              <Link
+                key={product.id}
+                href={`/products?tag=${encodeURIComponent(product.tags[0])}`}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                <div className="relative h-48">
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                  />
+                  {product.seasonalEndDate && (
+                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                      Available until {new Date(product.seasonalEndDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+                  <p className="text-gray-600 mb-4">{product.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         </section>

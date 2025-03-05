@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function Navbar() {
-  const { adminData } = useAuth();
+  const { adminData, logOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigation = [
@@ -15,6 +15,14 @@ export default function Navbar() {
     { name: 'About', href: '/about' },
     ...(adminData ? [{ name: 'Dashboard', href: '/admin' }] : []),
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await logOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <nav className="bg-white shadow-lg">
@@ -37,6 +45,21 @@ export default function Navbar() {
                 {item.name}
               </Link>
             ))}
+            {adminData ? (
+              <button
+                onClick={handleSignOut}
+                className="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/admin/login"
+                className="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -70,6 +93,25 @@ export default function Navbar() {
                 {item.name}
               </Link>
             ))}
+            {adminData ? (
+              <button
+                onClick={() => {
+                  handleSignOut();
+                  setIsMenuOpen(false);
+                }}
+                className="text-gray-600 hover:text-green-600 block w-full text-left px-3 py-2 rounded-md text-base font-medium"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/admin/login"
+                className="text-gray-600 hover:text-green-600 block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

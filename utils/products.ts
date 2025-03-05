@@ -39,6 +39,8 @@ export interface CreateProductData {
   imageUrl: string;
   tags: string[];
   isHotProduct: boolean;
+  isSeasonal: boolean;
+  seasonalEndDate?: Date;
 }
 
 export interface UpdateProductData {

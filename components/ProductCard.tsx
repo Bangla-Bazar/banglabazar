@@ -10,7 +10,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, className = '' }: ProductCardProps) {
-  const { id, name, description, price, imageUrl, tags, isHotProduct } = product;
+  const { id, name, description, imageUrl, tags, isHotProduct } = product;
 
   return (
     <Link href={`/products/${id}`}>
@@ -37,8 +37,7 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
         <div className="px-4 py-4">
           <h3 className="text-sm font-medium text-gray-900">{name}</h3>
           <p className="mt-1 text-sm text-gray-500 line-clamp-2">{description}</p>
-          <div className="mt-2 flex items-center justify-between">
-            <p className="text-lg font-medium text-gray-900">${price.toFixed(2)}</p>
+          <div className="mt-2">
             <div className="flex flex-wrap gap-1">
               {tags.slice(0, 2).map((tag) => (
                 <Badge key={tag} variant="secondary" size="sm">

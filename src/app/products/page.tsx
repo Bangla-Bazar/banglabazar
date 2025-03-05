@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { getAllProducts } from '@/lib/firestore';
 import { Product } from '@/types';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
@@ -12,6 +13,7 @@ export default function Products() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -26,6 +28,14 @@ export default function Products() {
   const allTags = Array.from(
     new Set(products.flatMap((product) => product.tags))
   ).sort();
+
+  // Handle URL parameters
+  useEffect(() => {
+    const tagFromUrl = searchParams.get('tag');
+    if (tagFromUrl) {
+      setSelectedTag(decodeURIComponent(tagFromUrl));
+    }
+  }, [searchParams]);
 
   // Filter products based on search term and selected tag
   useEffect(() => {
@@ -103,7 +113,7 @@ export default function Products() {
               <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                 {product.description}
               </p>
-              <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex flex-wrap gap-2">
                 {product.tags.map((tag) => (
                   <span
                     key={tag}
@@ -112,17 +122,6 @@ export default function Products() {
                     {tag}
                   </span>
                 ))}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-green-600 font-bold">
-                  ${product.price.toFixed(2)}
-                </span>
-                <Link
-                  href={`/products/${product.id}`}
-                  className="text-green-600 hover:text-green-700 font-medium"
-                >
-                  View Details
-                </Link>
               </div>
             </div>
           </div>
