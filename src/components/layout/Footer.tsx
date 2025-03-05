@@ -5,12 +5,12 @@ export default function Footer() {
   return (
     <footer className="bg-gray-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Store Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">BanglaBazar</h3>
+            <h3 className="text-xl font-bold mb-4">Bangla Bazar Halal Meat & Grocery</h3>
             <p className="text-gray-300">
-              Your one-stop shop for authentic Bangladeshi and Indian groceries in Lansdale.
+              Open 7 days a week from 10 AM to 10 PM
             </p>
           </div>
 
@@ -35,6 +35,24 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+          {/* Highlights */}
+          <div>
+            <h3 className="text-xl font-bold mb-4">Highlights</h3>
+            <div className="space-y-4">
+              <p className="flex items-center text-gray-300">
+                <span className="font-bold">✔ </span>
+                Accepts SNAP/EBT
+              </p>
+              <p className="flex items-center text-gray-300">
+              <span className="font-bold">✔ </span>
+              Accepts credit cards
+              </p>
+              <p className="flex items-center text-gray-300">
+              <span className="font-bold">✔ </span>
+              Accepts credit cards
+              </p>
+            </div>
+          </div>
 
           {/* Contact Info */}
           <div>
@@ -42,15 +60,15 @@ export default function Footer() {
             <div className="space-y-4">
               <p className="flex items-center text-gray-300">
                 <MapPinIcon className="h-5 w-5 mr-2" />
-                123 Main Street, Lansdale, PA 19446
+                1745 N Broad St, Lansdale, PA 19446
               </p>
               <p className="flex items-center text-gray-300">
                 <PhoneIcon className="h-5 w-5 mr-2" />
-                (215) 555-0123
+                (215) 393-8000
               </p>
               <p className="flex items-center text-gray-300">
                 <EnvelopeIcon className="h-5 w-5 mr-2" />
-                info@banglabazar.com
+                banglabazarhmg@gmail.com
               </p>
             </div>
           </div>
