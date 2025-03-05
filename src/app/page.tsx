@@ -93,14 +93,7 @@ export default function Home() {
               <p className="text-lg md:text-xl mb-8">
                 {banners[currentBannerIndex].description}
               </p>
-              {banners[currentBannerIndex].link && (
-                <Link
-                  href={banners[currentBannerIndex].link}
-                  className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors"
-                >
-                  Shop Now
-                </Link>
-              )}
+          
             </div>
           </div>
           {banners.length > 1 && (

@@ -162,7 +162,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (product: Product) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+
 
     try {
       await deleteProduct(product.id, product.imageUrl);
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteBanner = async (banner: Banner) => {
-    if (!confirm('Are you sure you want to delete this banner?')) return;
+
 
     try {
       await deleteBanner(banner.id, banner.imageUrl);
